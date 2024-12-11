@@ -1,5 +1,8 @@
 # pydantic_googleaddon/web_search.py
 
+import asyncio
+from typing import List, Dict, Any
+
 class WebSearch:
     def __init__(self, agent, web_tool):
         self.agent = agent
@@ -8,17 +11,13 @@ class WebSearch:
         agent.register_tool(self.search, "search", "Search the web for information")
         agent.register_tool(self.browse, "browse", "Get content from a specific URL")
 
-    async def search(self, query: str) -> str:
+    async def search(self) -> List[Dict[str, Any]]:
         """Search the web and return results."""
-        results = self.web_tool.search(query)
-        formatted_results = []
-        for i, result in enumerate(results, 1):
-            formatted_results.append(
-                f"{i}. {result['title']}\n"
-                f"   URL: {result['url']}\n"
-                f"   Description: {result['description']}\n"
-            )
-        return "\n".join(formatted_results)
+        query = await asyncio.get_event_loop().run_in_executor(None, input, "Enter your search query: ")
+        if not query.strip():
+            return []
+            
+        return self.web_tool.search(query)
 
     async def browse(self, url: str) -> str:
         """Get content from a specific URL."""
